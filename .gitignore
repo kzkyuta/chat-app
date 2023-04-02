@@ -25,3 +25,7 @@ yarn-error.log*
 # firebase related
 **/.firebase
 **/.firebaserc
+
+# editor settings related
+.vscode/
+.prettierrc.json
