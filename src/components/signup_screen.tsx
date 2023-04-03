@@ -1,8 +1,21 @@
 import React from 'react';
+import {UserType} from '../types';
+import {AuthUserContextType, useAuthUserContext} from '../providers';
 
 const SignUpScreen = () => {
+  const authUser: AuthUserContextType = useAuthUserContext();
+  const signin = () => {
+    const user: UserType = {
+      name: 'test',
+      iconPath: '',
+      isLogin: true,
+    };
+    authUser.login(user);
+  };
+
   const handleSubmit = (event: {preventDefault: () => void}) => {
     event.preventDefault();
+    signin();
     console.log('登録');
   };
   return (

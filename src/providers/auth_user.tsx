@@ -8,9 +8,13 @@ export type AuthUserContextType = {
   logout: () => void;
 };
 
-export const AuthContext = createContext<AuthUserContextType>(
+const AuthContext = createContext<AuthUserContextType>(
   {} as AuthUserContextType,
 );
+
+export const useAuthUserContext = (): AuthUserContextType => {
+  return useContext<AuthUserContextType>(AuthContext);
+};
 
 type Props = {
   children: React.ReactNode;
@@ -22,12 +26,13 @@ export const AuthUserProvider: React.FC<Props> = props => {
 
   const login = async (userData: UserType) => {
     setUser(userData);
-    navigate('/');
+    navigate('/chat');
+    console.log('called navigate');
   };
 
   const logout = () => {
     setUser(null);
-    navigate('/signup', {replace: true});
+    navigate('/', {replace: true});
   };
 
   const value: AuthUserContextType = useMemo(
@@ -40,13 +45,6 @@ export const AuthUserProvider: React.FC<Props> = props => {
   );
 
   return (
-    <AuthContext.Provider value={value}>
-      {' '}
-      {props.children}{' '}
-    </AuthContext.Provider>
+    <AuthContext.Provider value={value}>{props.children}</AuthContext.Provider>
   );
-};
-
-const useAuth = () => {
-  return useContext(AuthContext);
 };
