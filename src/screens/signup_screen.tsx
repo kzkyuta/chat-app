@@ -56,6 +56,22 @@ const SignUpScreen = () => {
             onChange={handleChangePassword}
           />
         </div>
+        <div>
+          <label>画像</label>
+          <input
+            name="file"
+            type="file"
+            // onChange={handleChangePassword}
+          />
+        </div>
+        <div>
+          <label>ユーザ名</label>
+          <input
+            name="text"
+            type="text"
+            // onChange={handleChangePassword}
+          />
+        </div>
         <div style={{display: 'grid'}}>
           <button>ユーザ登録</button>
         </div>
