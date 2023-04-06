@@ -23,7 +23,6 @@ const LoginScreen = () => {
     } catch (e) {
       alert(e);
     }
-    console.log('登録');
   };
 
   useEffect(() => {

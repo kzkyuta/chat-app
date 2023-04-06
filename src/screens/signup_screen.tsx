@@ -1,31 +1,66 @@
 import React, {useState} from 'react';
 import {UserType} from '../types';
 import {AuthUserContextType, useAuthUserContext} from '../providers';
-import {firebaseAuth} from '../firebase';
-import {createUserWithEmailAndPassword} from 'firebase/auth';
+import {db, firebaseAuth, storage} from '../firebase';
+import {createUserWithEmailAndPassword, updateProfile} from 'firebase/auth';
 import {useNavigate} from 'react-router-dom';
+import {ref, uploadBytesResumable, getDownloadURL} from 'firebase/storage';
+import {doc, setDoc} from 'firebase/firestore';
 
 const SignUpScreen = () => {
   const authUser: AuthUserContextType = useAuthUserContext();
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const handleSubmit = async (event: {preventDefault: () => void}) => {
-    console.log('登録');
+  const [displayName, setDisplayname] = useState('');
+  const [accountImage, setAccountImage] = useState<File | null>(null);
+
+  const handleSubmit = async (event: any) => {
     event.preventDefault();
     try {
-      await createUserWithEmailAndPassword(firebaseAuth, email, password);
+      const res = await createUserWithEmailAndPassword(
+        firebaseAuth,
+        email,
+        password,
+      );
+      const storageRef = ref(storage, displayName);
+      const uploadTask = uploadBytesResumable(storageRef, accountImage!);
+      uploadTask.on('state_changed', () => {
+        getDownloadURL(uploadTask.snapshot.ref).then(async downloadURL => {
+          await updateProfile(res.user, {
+            displayName,
+            photoURL: downloadURL,
+          });
+          await setDoc(doc(db, 'users', res.user.uid), {
+            uid: res.user.uid,
+            title: displayName,
+            photoURL: downloadURL,
+          }).catch(error => {
+            console.log('setDoc:' + error);
+          });
+        });
+      });
       signin();
     } catch (e) {
       alert(e);
     }
   };
+
   const handleChangeEmail = (event: React.ChangeEvent<HTMLInputElement>) => {
     setEmail(event.currentTarget.value);
   };
   const handleChangePassword = (event: React.ChangeEvent<HTMLInputElement>) => {
     setPassword(event.currentTarget.value);
   };
+  const handleChangeImage = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setAccountImage(event.target.files![0]);
+  };
+  const handleChangeDisplayName = (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    setDisplayname(event.currentTarget.value);
+  };
+
   const signin = () => {
     const user: UserType = {
       name: 'test',
@@ -45,6 +80,7 @@ const SignUpScreen = () => {
             name="email"
             type="email"
             placeholder="email"
+            required
             onChange={handleChangeEmail}
           />
         </div>
@@ -53,6 +89,7 @@ const SignUpScreen = () => {
           <input
             name="password"
             type="password"
+            required
             onChange={handleChangePassword}
           />
         </div>
@@ -61,7 +98,9 @@ const SignUpScreen = () => {
           <input
             name="file"
             type="file"
-            // onChange={handleChangePassword}
+            accept="image/*"
+            required
+            onChange={handleChangeImage}
           />
         </div>
         <div>
@@ -69,7 +108,8 @@ const SignUpScreen = () => {
           <input
             name="text"
             type="text"
-            // onChange={handleChangePassword}
+            required
+            onChange={handleChangeDisplayName}
           />
         </div>
         <div style={{display: 'grid'}}>
