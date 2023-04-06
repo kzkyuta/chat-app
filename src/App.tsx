@@ -10,12 +10,12 @@ import LoginScreen from './screens/login_screen';
 function App() {
   return (
     <Routes>
-      <Route path="/" element={<LoginScreen />} />
+      <Route path="/login" element={<LoginScreen />} />
       <Route path="/signup" element={<SignUpScreen />} />
       <Route
-        path="/chat"
+        path="/"
         element={
-          <RouteAuthGuard redirect="/" children={<ChatScreen />} />
+          <RouteAuthGuard redirect="/login" children={<ChatScreen />} />
         }></Route>
     </Routes>
   );

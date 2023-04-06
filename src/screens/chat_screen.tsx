@@ -6,8 +6,14 @@ import {
   Message,
   MessageInput,
 } from '@chatscope/chat-ui-kit-react';
+import {AuthUserContextType, useAuthUserContext} from '../providers';
 
 const ChatScreen = () => {
+  const authUser: AuthUserContextType = useAuthUserContext();
+  const logout = () => {
+    authUser.logout();
+  };
+
   return (
     <div style={{position: 'relative', height: '500px'}}>
       <MainContainer>
@@ -26,6 +32,9 @@ const ChatScreen = () => {
           <MessageInput placeholder="Type message here" />
         </ChatContainer>
       </MainContainer>
+      <div style={{display: 'grid', margin: '5% 0'}}>
+        <button onClick={logout}>ログアウト</button>
+      </div>
     </div>
   );
 };

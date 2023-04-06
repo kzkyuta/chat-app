@@ -3,9 +3,11 @@ import {UserType} from '../types';
 import {AuthUserContextType, useAuthUserContext} from '../providers';
 import {firebaseAuth} from '../firebase';
 import {createUserWithEmailAndPassword} from 'firebase/auth';
+import {useNavigate} from 'react-router-dom';
 
 const SignUpScreen = () => {
   const authUser: AuthUserContextType = useAuthUserContext();
+  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const handleSubmit = async (event: {preventDefault: () => void}) => {
@@ -57,10 +59,10 @@ const SignUpScreen = () => {
         <div style={{display: 'grid'}}>
           <button>ユーザ登録</button>
         </div>
-        <div style={{display: 'grid'}}>
-          <button>ログイン 画面へ移動</button>
-        </div>
       </form>
+      <div style={{display: 'grid'}}>
+        <button onClick={() => navigate('/login')}>ログイン 画面へ移動</button>
+      </div>
     </div>
   );
 };

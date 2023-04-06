@@ -26,13 +26,13 @@ export const AuthUserProvider: React.FC<Props> = props => {
 
   const login = async (userData: UserType) => {
     setUser(userData);
-    navigate('/chat');
+    navigate('/');
     console.log('called navigate');
   };
 
   const logout = () => {
     setUser(null);
-    navigate('/', {replace: true});
+    navigate('/login', {replace: true});
   };
 
   const value: AuthUserContextType = useMemo(
