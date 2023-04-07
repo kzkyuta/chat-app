@@ -16,7 +16,6 @@ export const AuthContextProvider: React.FC<{
   useEffect(() => {
     const unSubscrive = onAuthStateChanged(firebaseAuth, user => {
       setUser(user);
-      console.log('displayname', user?.displayName);
     });
     return () => {
       unSubscrive();

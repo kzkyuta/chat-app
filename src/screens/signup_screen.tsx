@@ -39,7 +39,7 @@ const SignUpScreen = () => {
             uid: res.user.uid,
             title: displayName,
             photoURL: downloadURL,
-          }).catch(error => console.log('setDoc error:', error));
+          }).catch(e => console.log('setDoc error:', e));
 
           navigate('/');
         });
