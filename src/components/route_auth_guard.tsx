@@ -8,7 +8,7 @@ type Props = {
 };
 
 export const RouteAuthGuard: React.FC<Props> = props => {
-  const authUser = useAuthContext().user;
+  const authUser = useAuthContext();
   if (!authUser) {
     return <Navigate to={props.redirect} replace={true}></Navigate>;
   }

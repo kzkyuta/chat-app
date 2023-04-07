@@ -1,45 +1,29 @@
-import {useNavigate} from 'react-router-dom';
-import {useContext, useMemo, createContext, useState} from 'react';
-import {User} from 'firebase/auth';
+import {useContext, createContext, useState, useEffect} from 'react';
+import {User, onAuthStateChanged} from 'firebase/auth';
+import {firebaseAuth} from '../firebase';
 
-export type AuthContextType = {
-  user: User | null;
-  login: (user: User) => void;
-  logout: () => void;
-};
+const AuthContext = createContext<User | null>({} as User | null);
 
-const AuthContext = createContext<AuthContextType>({} as AuthContextType);
-
-export const useAuthContext = (): AuthContextType => {
-  return useContext<AuthContextType>(AuthContext);
+export const useAuthContext = (): User | null => {
+  return useContext<User | null>(AuthContext);
 };
 
 export const AuthContextProvider: React.FC<{
   children: React.ReactNode;
 }> = props => {
   const [user, setUser] = useState<User | null>(null);
-  const navigate = useNavigate();
 
-  const login = (userData: User) => {
-    setUser(userData);
-    navigate('/');
-  };
-
-  const logout = () => {
-    setUser(null);
-    navigate('/login', {replace: true});
-  };
-
-  const value: AuthContextType = useMemo(
-    () => ({
-      user,
-      login,
-      logout,
-    }),
-    [user],
-  );
+  useEffect(() => {
+    const unSubscrive = onAuthStateChanged(firebaseAuth, user => {
+      setUser(user);
+      console.log('displayname', user?.displayName);
+    });
+    return () => {
+      unSubscrive();
+    };
+  }, []);
 
   return (
-    <AuthContext.Provider value={value}>{props.children}</AuthContext.Provider>
+    <AuthContext.Provider value={user}>{props.children}</AuthContext.Provider>
   );
 };

@@ -4,7 +4,6 @@ import {createUserWithEmailAndPassword, updateProfile} from 'firebase/auth';
 import {useNavigate} from 'react-router-dom';
 import {ref, uploadBytesResumable, getDownloadURL} from 'firebase/storage';
 import {doc, getDoc, setDoc} from 'firebase/firestore';
-import {AuthContextType, useAuthContext} from '../providers/auth_context';
 import {
   ChatContextType,
   FIRST_GROUP_CHAT,
@@ -12,7 +11,6 @@ import {
 } from '../providers/chat_context';
 
 const SignUpScreen = () => {
-  const authContext: AuthContextType = useAuthContext();
   const chatContext: ChatContextType = useChatContext();
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
@@ -28,36 +26,29 @@ const SignUpScreen = () => {
         email,
         password,
       );
-      const storageRef = ref(storage, displayName);
-      const uploadTask = uploadBytesResumable(storageRef, accountImage!);
-      uploadTask.on(
-        'state_changed',
-        error => {
-          console.log('Uploading file error: ', error);
-        },
-        () => {
-          getDownloadURL(uploadTask.snapshot.ref).then(async downloadURL => {
-            await updateProfile(res.user, {
-              displayName,
-              photoURL: downloadURL,
-            });
-            await setDoc(doc(db, 'users', res.user.uid), {
-              uid: res.user.uid,
-              title: displayName,
-              photoURL: downloadURL,
-            }).catch(error => {
-              console.log('setDoc error:', error);
-            });
-          });
-        },
-      );
+      const date = new Date().getTime();
+      const storageRef = ref(storage, `${displayName + date}`);
+      await uploadBytesResumable(storageRef, accountImage!).then(() => {
+        getDownloadURL(storageRef).then(async downloadURL => {
+          await updateProfile(res.user, {
+            displayName,
+            photoURL: downloadURL,
+          }).catch(e => console.log('updateProfile error', e));
 
+          await setDoc(doc(db, 'users', res.user.uid), {
+            uid: res.user.uid,
+            title: displayName,
+            photoURL: downloadURL,
+          }).catch(error => console.log('setDoc error:', error));
+
+          navigate('/');
+        });
+      });
       chatContext.changeChat(FIRST_GROUP_CHAT);
-      const chatRes = await getDoc(doc(db, 'chats', chatContext.chatId));
+      const chatRes = await getDoc(doc(db, 'chats', FIRST_GROUP_CHAT));
       if (!chatRes.exists()) {
-        await setDoc(doc(db, 'chats', chatContext.chatId), {messages: []});
+        await setDoc(doc(db, 'chats', FIRST_GROUP_CHAT), {messages: []});
       }
-      authContext.login(res.user);
     } catch (e) {
       alert(e);
     }

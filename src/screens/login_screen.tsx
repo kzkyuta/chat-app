@@ -2,26 +2,20 @@ import {useState} from 'react';
 import {signInWithEmailAndPassword} from 'firebase/auth';
 import {firebaseAuth} from '../firebase';
 import {useNavigate} from 'react-router-dom';
-import {AuthContextType, useAuthContext} from '../providers/auth_context';
 import {FIRST_GROUP_CHAT, useChatContext} from '../providers/chat_context';
 
 const LoginScreen = () => {
-  const authContext: AuthContextType = useAuthContext();
   const chatContext = useChatContext();
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+
   const handleSubmit = async (event: {preventDefault: () => void}) => {
     event.preventDefault();
-
     try {
-      const res = await signInWithEmailAndPassword(
-        firebaseAuth,
-        email,
-        password,
-      );
+      await signInWithEmailAndPassword(firebaseAuth, email, password);
+      navigate('/');
       chatContext.changeChat(FIRST_GROUP_CHAT);
-      authContext.login(res.user);
     } catch (e) {
       alert(e);
     }
