@@ -1,16 +1,13 @@
-import {useEffect, useState} from 'react';
-import {AuthUserContextType, useAuthUserContext} from '../providers';
-import {
-  User,
-  signInWithEmailAndPassword,
-  onAuthStateChanged,
-} from 'firebase/auth';
+import {useState} from 'react';
+import {signInWithEmailAndPassword} from 'firebase/auth';
 import {firebaseAuth} from '../firebase';
-import {UserType} from '../types';
 import {useNavigate} from 'react-router-dom';
+import {AuthUserContextType, useAuthUserContext} from '../providers/auth_user';
+import {FIRST_GROUP_CHAT, useChatIdContext} from '../providers/chat_context';
 
 const LoginScreen = () => {
-  const authUser: AuthUserContextType = useAuthUserContext();
+  const authContext: AuthUserContextType = useAuthUserContext();
+  const chatIdContext = useChatIdContext();
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -18,32 +15,16 @@ const LoginScreen = () => {
     event.preventDefault();
 
     try {
-      await signInWithEmailAndPassword(firebaseAuth, email, password);
-      login();
+      const res = await signInWithEmailAndPassword(
+        firebaseAuth,
+        email,
+        password,
+      );
+      chatIdContext.setChatId(FIRST_GROUP_CHAT);
+      authContext.login(res.user);
     } catch (e) {
       alert(e);
     }
-  };
-
-  useEffect(() => {
-    onAuthStateChanged(firebaseAuth, (currentUser: User | null) => {
-      console.log(currentUser);
-    });
-  }, []);
-
-  const handleChangeEmail = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setEmail(event.currentTarget.value);
-  };
-  const handleChangePassword = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setPassword(event.currentTarget.value);
-  };
-  const login = () => {
-    const user: UserType = {
-      name: 'test',
-      iconPath: '',
-      isLogin: true,
-    };
-    authUser.login(user);
   };
 
   return (
@@ -56,7 +37,7 @@ const LoginScreen = () => {
             name="email"
             type="email"
             placeholder="email"
-            onChange={handleChangeEmail}
+            onChange={e => setEmail(e.currentTarget.value)}
           />
         </div>
         <div>
@@ -64,7 +45,7 @@ const LoginScreen = () => {
           <input
             name="password"
             type="password"
-            onChange={handleChangePassword}
+            onChange={e => setPassword(e.currentTarget.value)}
           />
         </div>
         <div style={{display: 'grid'}}>

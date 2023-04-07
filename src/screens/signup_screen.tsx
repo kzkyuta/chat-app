@@ -1,14 +1,19 @@
 import React, {useState} from 'react';
-import {UserType} from '../types';
-import {AuthUserContextType, useAuthUserContext} from '../providers';
 import {db, firebaseAuth, storage} from '../firebase';
 import {createUserWithEmailAndPassword, updateProfile} from 'firebase/auth';
 import {useNavigate} from 'react-router-dom';
 import {ref, uploadBytesResumable, getDownloadURL} from 'firebase/storage';
-import {doc, setDoc} from 'firebase/firestore';
+import {doc, getDoc, setDoc} from 'firebase/firestore';
+import {AuthUserContextType, useAuthUserContext} from '../providers/auth_user';
+import {
+  ChatIdContextType,
+  FIRST_GROUP_CHAT,
+  useChatIdContext,
+} from '../providers/chat_context';
 
 const SignUpScreen = () => {
   const authUser: AuthUserContextType = useAuthUserContext();
+  const chatIdContext: ChatIdContextType = useChatIdContext();
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -25,49 +30,37 @@ const SignUpScreen = () => {
       );
       const storageRef = ref(storage, displayName);
       const uploadTask = uploadBytesResumable(storageRef, accountImage!);
-      uploadTask.on('state_changed', () => {
-        getDownloadURL(uploadTask.snapshot.ref).then(async downloadURL => {
-          await updateProfile(res.user, {
-            displayName,
-            photoURL: downloadURL,
+      uploadTask.on(
+        'state_changed',
+        error => {
+          console.log('Uploading file error: ', error);
+        },
+        () => {
+          getDownloadURL(uploadTask.snapshot.ref).then(async downloadURL => {
+            await updateProfile(res.user, {
+              displayName,
+              photoURL: downloadURL,
+            });
+            await setDoc(doc(db, 'users', res.user.uid), {
+              uid: res.user.uid,
+              title: displayName,
+              photoURL: downloadURL,
+            }).catch(error => {
+              console.log('setDoc error:', error);
+            });
           });
-          await setDoc(doc(db, 'users', res.user.uid), {
-            uid: res.user.uid,
-            title: displayName,
-            photoURL: downloadURL,
-          }).catch(error => {
-            console.log('setDoc:' + error);
-          });
-        });
-      });
-      signin();
+        },
+      );
+      // TODO
+      chatIdContext.setChatId(FIRST_GROUP_CHAT);
+      const chatRes = await getDoc(doc(db, 'chats', FIRST_GROUP_CHAT));
+      if (!chatRes.exists()) {
+        await setDoc(doc(db, 'chats', chatIdContext.chatId), {messages: []});
+      }
+      authUser.login(res.user);
     } catch (e) {
       alert(e);
     }
-  };
-
-  const handleChangeEmail = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setEmail(event.currentTarget.value);
-  };
-  const handleChangePassword = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setPassword(event.currentTarget.value);
-  };
-  const handleChangeImage = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setAccountImage(event.target.files![0]);
-  };
-  const handleChangeDisplayName = (
-    event: React.ChangeEvent<HTMLInputElement>,
-  ) => {
-    setDisplayname(event.currentTarget.value);
-  };
-
-  const signin = () => {
-    const user: UserType = {
-      name: 'test',
-      iconPath: '',
-      isLogin: true,
-    };
-    authUser.login(user);
   };
 
   return (
@@ -81,7 +74,7 @@ const SignUpScreen = () => {
             type="email"
             placeholder="email"
             required
-            onChange={handleChangeEmail}
+            onChange={e => setEmail(e.currentTarget.value)}
           />
         </div>
         <div>
@@ -90,7 +83,7 @@ const SignUpScreen = () => {
             name="password"
             type="password"
             required
-            onChange={handleChangePassword}
+            onChange={e => setPassword(e.currentTarget.value)}
           />
         </div>
         <div>
@@ -100,7 +93,7 @@ const SignUpScreen = () => {
             type="file"
             accept="image/*"
             required
-            onChange={handleChangeImage}
+            onChange={e => setAccountImage(e.target.files![0])}
           />
         </div>
         <div>
@@ -109,7 +102,7 @@ const SignUpScreen = () => {
             name="text"
             type="text"
             required
-            onChange={handleChangeDisplayName}
+            onChange={e => setDisplayname(e.currentTarget.value)}
           />
         </div>
         <div style={{display: 'grid'}}>
