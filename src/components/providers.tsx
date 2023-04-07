@@ -1,10 +1,15 @@
 import React from 'react';
-import {AuthUserProvider} from '../providers';
+import {ChatContextProvider} from '../providers/chat_context';
+import {AuthContextProvider} from '../providers/auth_context';
 
 type Props = {
   children: React.ReactNode;
 };
 
 export const Providers: React.FC<Props> = props => {
-  return <AuthUserProvider>{props.children}</AuthUserProvider>;
+  return (
+    <ChatContextProvider>
+      <AuthContextProvider>{props.children}</AuthContextProvider>
+    </ChatContextProvider>
+  );
 };

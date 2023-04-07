@@ -4,16 +4,16 @@ import {createUserWithEmailAndPassword, updateProfile} from 'firebase/auth';
 import {useNavigate} from 'react-router-dom';
 import {ref, uploadBytesResumable, getDownloadURL} from 'firebase/storage';
 import {doc, getDoc, setDoc} from 'firebase/firestore';
-import {AuthUserContextType, useAuthUserContext} from '../providers/auth_user';
+import {AuthContextType, useAuthContext} from '../providers/auth_context';
 import {
-  ChatIdContextType,
+  ChatContextType,
   FIRST_GROUP_CHAT,
-  useChatIdContext,
+  useChatContext,
 } from '../providers/chat_context';
 
 const SignUpScreen = () => {
-  const authUser: AuthUserContextType = useAuthUserContext();
-  const chatIdContext: ChatIdContextType = useChatIdContext();
+  const authContext: AuthContextType = useAuthContext();
+  const chatContext: ChatContextType = useChatContext();
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -51,13 +51,13 @@ const SignUpScreen = () => {
           });
         },
       );
-      // TODO
-      chatIdContext.setChatId(FIRST_GROUP_CHAT);
-      const chatRes = await getDoc(doc(db, 'chats', FIRST_GROUP_CHAT));
+
+      chatContext.changeChat(FIRST_GROUP_CHAT);
+      const chatRes = await getDoc(doc(db, 'chats', chatContext.chatId));
       if (!chatRes.exists()) {
-        await setDoc(doc(db, 'chats', chatIdContext.chatId), {messages: []});
+        await setDoc(doc(db, 'chats', chatContext.chatId), {messages: []});
       }
-      authUser.login(res.user);
+      authContext.login(res.user);
     } catch (e) {
       alert(e);
     }

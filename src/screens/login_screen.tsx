@@ -2,12 +2,12 @@ import {useState} from 'react';
 import {signInWithEmailAndPassword} from 'firebase/auth';
 import {firebaseAuth} from '../firebase';
 import {useNavigate} from 'react-router-dom';
-import {AuthUserContextType, useAuthUserContext} from '../providers/auth_user';
-import {FIRST_GROUP_CHAT, useChatIdContext} from '../providers/chat_context';
+import {AuthContextType, useAuthContext} from '../providers/auth_context';
+import {FIRST_GROUP_CHAT, useChatContext} from '../providers/chat_context';
 
 const LoginScreen = () => {
-  const authContext: AuthUserContextType = useAuthUserContext();
-  const chatIdContext = useChatIdContext();
+  const authContext: AuthContextType = useAuthContext();
+  const chatContext = useChatContext();
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -20,7 +20,7 @@ const LoginScreen = () => {
         email,
         password,
       );
-      chatIdContext.setChatId(FIRST_GROUP_CHAT);
+      chatContext.changeChat(FIRST_GROUP_CHAT);
       authContext.login(res.user);
     } catch (e) {
       alert(e);
