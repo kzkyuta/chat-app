@@ -4,15 +4,20 @@ import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 import '@chatscope/chat-ui-kit-styles/dist/default/styles.min.css';
-
+import {BrowserRouter} from 'react-router-dom';
+import {Providers} from './components/providers';
 
 const root = ReactDOM.createRoot(
-  document.getElementById('root') as HTMLElement
+  document.getElementById('root') as HTMLElement,
 );
 root.render(
   <React.StrictMode>
-    <App />
-  </React.StrictMode>
+    <BrowserRouter>
+      <Providers>
+        <App />
+      </Providers>
+    </BrowserRouter>
+  </React.StrictMode>,
 );
 
 // If you want to start measuring performance in your app, pass a function
