@@ -25,6 +25,7 @@ export type messageType = {
   msg: string;
   senderId: string;
   senderImg: string;
+  senderName: string;
   dateTime: Timestamp;
 };
 
@@ -40,6 +41,7 @@ const ChatScreen = () => {
         msg,
         senderId: authContext?.uid,
         senderImg: authContext?.photoURL,
+        senderName: authContext?.displayName,
         dateTime: Timestamp.now(),
       }),
     });
@@ -71,6 +73,7 @@ const ChatScreen = () => {
                     m.senderId === authContext?.uid ? 'outgoing' : 'incoming',
                   position: 0,
                 }}>
+                <Message.Footer sentTime={m.senderName} />
                 <Avatar src={m.senderImg} />
               </Message>
             ))}
